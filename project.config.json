@@ -1,0 +1,43 @@
+{
+    "version": "2.0.0",
+    "compileType": "miniprogram",
+    "libVersion": "3.16.2",
+    "appid": "wx40b9b666a9210b9c",
+    "projectname": "shenlun-material",
+    "setting": {
+        "urlCheck": true,
+        "es6": true,
+        "enhance": true,
+        "postcss": true,
+        "minified": true,
+        "coverView": true,
+        "autoAudits": false,
+        "compileWorklet": false,
+        "uglifyFileName": false,
+        "uploadWithSourceMap": true,
+        "packNpmManually": false,
+        "packNpmRelationList": [],
+        "minifyWXSS": true,
+        "minifyWXML": true,
+        "localPlugins": false,
+        "disableUseStrict": false,
+        "useCompilerPlugins": false,
+        "condition": false,
+        "swc": false,
+        "disableSWC": true,
+        "babelSetting": {
+            "ignore": [],
+            "disablePlugins": [],
+            "outputPath": ""
+        }
+    },
+    "cloudfunctionRoot": "cloud/functions/",
+    "cloud": true,
+    "miniprogramRoot": "miniprogram/",
+    "simulatorPluginLibVersion": {},
+    "packOptions": {
+        "ignore": [],
+        "include": []
+    },
+    "editorSetting": {}
+}

@@ -1,0 +1,104 @@
+/* 详情页样式 */
+
+.page {
+  min-height: 100vh;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.container {
+  padding: 24rpx;
+}
+
+/* 文章信息卡片 */
+.article-header {
+  padding: 32rpx;
+}
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 16rpx;
+}
+.article-header .title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1.5;
+  margin-bottom: 16rpx;
+}
+.article-header .meta {
+  font-size: 24rpx;
+  color: #999;
+}
+.meta .sep {
+  margin: 0 16rpx;
+  color: #ddd;
+}
+
+/* 通用区块 */
+.section-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #c41e3a;
+  margin-bottom: 20rpx;
+  padding-left: 16rpx;
+  border-left: 6rpx solid #c41e3a;
+}
+.excerpt-text,
+.structure-text {
+  font-size: 28rpx;
+  color: #444;
+  line-height: 2;
+}
+
+/* 金句行 */
+.quote-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+.quote-row:last-child {
+  border-bottom: none;
+}
+.quote-content {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+  line-height: 1.7;
+  font-style: italic;
+}
+.copy-btn {
+  font-size: 22rpx;
+  color: #c41e3a;
+  padding: 6rpx 16rpx;
+  border: 1rpx solid #fdd;
+  border-radius: 6rpx;
+  flex-shrink: 0;
+}
+
+/* 学习要点 */
+.point-row {
+  font-size: 28rpx;
+  color: #444;
+  line-height: 2;
+  padding: 4rpx 0;
+}
+
+/* 原文链接 */
+.link-row {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 12rpx 0;
+}
+.link-text {
+  flex: 1;
+  font-size: 24rpx;
+  color: #3a6bc4;
+  word-break: break-all;
+}
+.arrow {
+  color: #3a6bc4;
+  font-size: 32rpx;
+}

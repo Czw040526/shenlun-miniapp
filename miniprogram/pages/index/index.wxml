@@ -1,0 +1,174 @@
+<!-- 首页 - 今日素材 -->
+<view class="page">
+
+  <!-- 顶部日期 + 刷新 -->
+  <view class="header-bar">
+    <view class="date-label">{{dateText}}</view>
+    <view class="refresh-btn" bindtap="onRefresh">
+      <text class="icon">⟳</text> 刷新
+    </view>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="loading-wrap" wx:if="{{loading}}">
+    <view class="icon">⏳</view>
+    <view class="text">正在获取今日素材…</view>
+  </view>
+
+  <!-- 内容 -->
+  <view class="container" wx:if="{{!loading && data}}">
+    <!-- 今日学习概览 -->
+    <view class="overview-band">
+      <view class="overview-kicker">人民网观点 · 每日精加工</view>
+      <view class="title">{{data.title}}</view>
+      <view class="meta">
+        <text class="source">来源：人民网观点频道</text>
+        <text class="date">学习日期：{{data.date}}</text>
+      </view>
+    </view>
+
+    <!-- 分模块成品稿 -->
+    <view class="section" wx:if="{{copyText}}">
+      <view class="copy-toolbar">
+        <view>
+          <view class="copy-title">今日学习成稿</view>
+          <view class="copy-subtitle">按模块阅读与整理</view>
+        </view>
+        <view class="copy-all-btn" bindtap="onCopyAll">复制全文</view>
+      </view>
+      <view class="material-modules" wx:if="{{data.copySections && data.copySections.length}}">
+        <block wx:for="{{data.copySections}}" wx:for-item="section" wx:for-index="sectionIndex" wx:key="key">
+          <view class="material-module module-{{section.key}}">
+            <view class="material-module-header">
+              <view class="module-heading-group">
+                <view class="module-code">{{section.code}}</view>
+                <view class="module-heading-text">
+                  <text class="module-label">{{section.label}}</text>
+                  <text class="module-title">{{section.title}}</text>
+                </view>
+              </view>
+              <view class="module-actions">
+                <view class="module-copy-action secondary"
+                      wx:if="{{section.urls && section.urls.length}}"
+                      data-index="{{sectionIndex}}"
+                      bindtap="onCopySectionUrl">复制链接</view>
+                <view class="module-copy-action"
+                      data-index="{{sectionIndex}}"
+                      bindtap="onCopySection">复制内容</view>
+              </view>
+            </view>
+            <view class="material-module-body">
+              <block wx:for="{{section.contentLines}}" wx:for-item="line" wx:for-index="lineIndex" wx:key="id">
+                <view class="module-line-spacer" wx:if="{{line.type === 'spacer'}}"></view>
+                <text class="module-content-line line-{{line.type}}" user-select="true" wx:elif="{{line.type === 'text' || line.type === 'source' || line.type === 'article' || line.type === 'heading' || line.type === 'checklist'}}">{{line.text}}</text>
+                <view class="module-content-line line-field" wx:elif="{{line.type === 'field'}}">
+                  <text class="field-label" user-select="true">{{line.label}}：</text><text user-select="true">{{line.value}}</text>
+                </view>
+                <view class="module-content-line line-url" wx:elif="{{line.type === 'url'}}">
+                  <text class="url-prefix" user-select="true">{{line.prefix}}</text><view class="module-url-hit"
+                        data-section-index="{{sectionIndex}}"
+                        data-line-index="{{lineIndex}}"
+                        bindtap="onCopyArticleUrl"><text class="module-url">{{line.url}}</text></view><text user-select="true">{{line.suffix}}</text>
+                </view>
+              </block>
+            </view>
+          </view>
+        </block>
+      </view>
+    </view>
+
+    <!-- 第一梯队 -->
+    <view class="section" wx:if="{{!copyText}}">
+      <view class="section-header tier-1">
+        <view class="badge">T1</view>
+        <view class="label">第一梯队：必看核心（投入70%精力）</view>
+      </view>
+
+      <block wx:for="{{data.tier1}}" wx:key="id" wx:for-item="article">
+        <view class="card article-card"
+              data-id="{{article.id}}"
+              data-title="{{article.title}}"
+              bindtap="onTapArticle">
+          <view class="article-tag-row">
+            <text class="tag tag-red">{{article.column}}</text>
+            <text class="tag tag-blue" wx:if="{{article.category}}">{{article.category}}</text>
+          </view>
+          <view class="article-title">{{index+1}}. {{article.title}}</view>
+          <view class="article-excerpt">{{article.excerpt}}</view>
+          <view class="article-arrow">→</view>
+        </view>
+      </block>
+    </view>
+
+    <!-- 第二梯队 -->
+    <view class="section" wx:if="{{!copyText && data.tier2 && data.tier2.length}}">
+      <view class="section-header tier-2">
+        <view class="badge">T2</view>
+        <view class="label">第二梯队：大作文拔高（投入20%精力）</view>
+      </view>
+
+      <block wx:for="{{data.tier2}}" wx:key="id" wx:for-item="article">
+        <view class="card article-card compact"
+              data-id="{{article.id}}"
+              data-title="{{article.title}}"
+              bindtap="onTapArticle">
+          <view class="article-tag-row">
+            <text class="tag tag-blue">{{article.column}}</text>
+          </view>
+          <view class="article-title">{{article.title}}</view>
+          <view class="article-excerpt">{{article.excerpt}}</view>
+          <view class="article-arrow">→</view>
+        </view>
+      </block>
+    </view>
+
+    <!-- 第三梯队 -->
+    <view class="section" wx:if="{{!copyText && data.tier3 && data.tier3.length}}">
+      <view class="section-header tier-3">
+        <view class="badge">T3</view>
+        <view class="label">第三梯队：针对性补弱（投入10%精力）</view>
+      </view>
+
+      <block wx:for="{{data.tier3}}" wx:key="id" wx:for-item="article">
+        <view class="card article-card compact"
+              data-id="{{article.id}}"
+              data-title="{{article.title}}"
+              bindtap="onTapArticle">
+          <view class="article-tag-row">
+            <text class="tag tag-green">{{article.column}}</text>
+          </view>
+          <view class="article-title">{{article.title}}</view>
+          <view class="article-excerpt">{{article.excerpt}}</view>
+          <view class="article-arrow">→</view>
+        </view>
+      </block>
+    </view>
+
+    <!-- 金句卡片 -->
+    <view class="section" wx:if="{{!copyText && data.highlightQuotes && data.highlightQuotes.length}}">
+      <view class="section-header highlight">
+        <view class="badge">★</view>
+        <view class="label">今日必背金句</view>
+      </view>
+      <view class="card quotes-card">
+        <block wx:for="{{data.highlightQuotes}}" wx:key="*this">
+          <view class="quote-item">
+            <view class="quote-text">"{{item}}"</view>
+            <view class="copy-btn" data-text="{{item}}" bindtap="onCopyQuote">复制</view>
+          </view>
+        </block>
+      </view>
+    </view>
+
+    <!-- 底部提示 -->
+    <view class="footer-note">以上内容由 AI 自动生成，原文来自人民网观点频道</view>
+  </view>
+
+  <!-- 空态 -->
+  <view class="empty-wrap" wx:if="{{!loading && !data}}">
+    <view class="icon">📭</view>
+    <view class="text">今日素材暂未生成</view>
+    <view class="sub-text">{{error || '每天早上 7:30 生成前一天内容，请稍后刷新。'}}</view>
+  </view>
+
+</view>

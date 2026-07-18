@@ -1,0 +1,89 @@
+<!-- 历史记录页 -->
+<view class="page">
+  <!-- 加载中 -->
+  <view class="loading-wrap" wx:if="{{loading}}">
+    <view class="icon">⏳</view>
+    <view class="text">加载历史记录…</view>
+  </view>
+
+  <!-- 历史列表 -->
+  <view class="container" wx:if="{{!loading}}">
+    <block wx:for="{{records}}" wx:key="date">
+      <view class="record-item {{item.expanded ? 'is-expanded' : ''}}">
+        <view class="record-header" bindtap="onToggle" data-index="{{index}}">
+          <view class="record-date">
+            <view class="day">{{item.day}}</view>
+            <view class="month">{{item.month}}月</view>
+          </view>
+          <view class="record-summary">
+            <view class="record-title">{{item.title}}</view>
+            <view class="record-counts">
+              <text class="count-item">{{item.articleColumn || '人民网观点'}}</text>
+              <text class="count-item">{{item.articleTitle || '每日一篇精读'}}</text>
+            </view>
+          </view>
+          <view class="expand-icon {{item.expanded ? 'rotated' : ''}}">›</view>
+        </view>
+
+        <!-- 展开内容 -->
+        <view class="record-body" wx:if="{{item.expanded}}">
+          <view class="history-detail-loading" wx:if="{{item.detailLoading}}">正在加载素材…</view>
+          <view class="history-copy-row" wx:if="{{item.copyText}}">
+            <view class="history-copy-btn"
+                  data-text="{{item.copyText}}"
+                  bindtap="onCopyRecord">复制当天全文</view>
+          </view>
+          <view class="history-modules" wx:if="{{item.copySections && item.copySections.length}}">
+            <block wx:for="{{item.copySections}}" wx:for-item="section" wx:for-index="sectionIndex" wx:key="key">
+              <view class="history-module module-{{section.key}}">
+                <view class="history-module-header">
+                  <view class="history-module-heading">
+                    <view class="history-module-code">{{section.code}}</view>
+                    <view>
+                      <view class="history-module-label">{{section.label}}</view>
+                      <view class="history-module-title">{{section.title}}</view>
+                    </view>
+                  </view>
+                  <view class="history-module-actions">
+                    <view class="history-module-copy secondary"
+                          wx:if="{{section.urls && section.urls.length}}"
+                          data-record-index="{{index}}"
+                          data-section-index="{{sectionIndex}}"
+                          bindtap="onCopySectionUrl">复制链接</view>
+                    <view class="history-module-copy"
+                          data-record-index="{{index}}"
+                          data-section-index="{{sectionIndex}}"
+                          bindtap="onCopySection">复制内容</view>
+                  </view>
+                </view>
+                <view class="history-module-body">
+                  <block wx:for="{{section.contentLines}}" wx:for-item="line" wx:for-index="lineIndex" wx:key="id">
+                    <view class="history-line-spacer" wx:if="{{line.type === 'spacer'}}"></view>
+                    <text class="history-content-line line-{{line.type}}" user-select="true" wx:elif="{{line.type === 'text' || line.type === 'source' || line.type === 'article' || line.type === 'heading' || line.type === 'checklist'}}">{{line.text}}</text>
+                    <view class="history-content-line line-field" wx:elif="{{line.type === 'field'}}">
+                      <text class="field-label" user-select="true">{{line.label}}：</text><text user-select="true">{{line.value}}</text>
+                    </view>
+                    <view class="history-content-line line-url" wx:elif="{{line.type === 'url'}}">
+                      <text class="url-prefix" user-select="true">{{line.prefix}}</text><view class="history-url-hit"
+                            data-record-index="{{index}}"
+                            data-section-index="{{sectionIndex}}"
+                            data-line-index="{{lineIndex}}"
+                            bindtap="onCopyArticleUrl"><text class="history-url">{{line.url}}</text></view><text user-select="true">{{line.suffix}}</text>
+                    </view>
+                  </block>
+                </view>
+              </view>
+            </block>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <!-- 空态 -->
+    <view class="empty-wrap" wx:if="{{!records || records.length === 0}}">
+      <view class="icon">📭</view>
+      <view class="text">暂无历史记录</view>
+      <view class="sub-text">每日素材会自动保存在这里</view>
+    </view>
+  </view>
+</view>

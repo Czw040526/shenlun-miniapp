@@ -1,9 +1,0 @@
-{
-  "name": "generateDailyMaterial",
-  "version": "1.0.0",
-  "description": "调用 DeepSeek API 生成每日素材",
-  "main": "index.js",
-  "dependencies": {
-    "wx-server-sdk": "latest"
-  }
-}

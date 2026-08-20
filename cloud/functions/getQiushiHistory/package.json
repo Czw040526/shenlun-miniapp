@@ -1,0 +1,9 @@
+{
+  "name": "getQiushiHistory",
+  "version": "1.0.0",
+  "description": "获取《求是》杂志历史存档",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

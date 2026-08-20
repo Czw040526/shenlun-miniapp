@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "compileType": "miniprogram",
     "libVersion": "3.16.2",
-    "appid": "wx40b9b666a9210b9c",
+    "appid": "touristappid",
     "projectname": "shenlun-material",
     "setting": {
         "urlCheck": true,

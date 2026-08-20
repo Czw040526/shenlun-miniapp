@@ -1,6 +1,7 @@
 // 云函数：抓取网页内容
 const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
+const REQUEST_TIMEOUT = 30000
 
 exports.main = async (event) => {
   const { url } = event
@@ -16,7 +17,8 @@ exports.main = async (event) => {
     const html = await new Promise((resolve, reject) => {
       const client = url.startsWith('https') ? https : http
       const req = client.get(url, {
-        timeout: 15000,
+        timeout: REQUEST_TIMEOUT,
+        family: 4,
         headers: {
           'User-Agent': 'Mozilla/5.0 shenlun-miniapp-cloud',
           'Accept': 'text/html,application/xhtml+xml'
@@ -30,7 +32,8 @@ exports.main = async (event) => {
 
           const redirectClient = redirectUrl.startsWith('https') ? https : http
           redirectClient.get(redirectUrl, {
-            timeout: 15000,
+            timeout: REQUEST_TIMEOUT,
+            family: 4,
             headers: {
               'User-Agent': 'Mozilla/5.0 shenlun-miniapp-cloud',
               'Accept': 'text/html,application/xhtml+xml'
@@ -68,7 +71,7 @@ exports.main = async (event) => {
       })
 
       req.on('error', reject)
-      req.on('timeout', () => { req.destroy(); reject(new Error('请求超时')) })
+      req.on('timeout', () => { req.destroy(); reject(new Error(`请求超过 ${REQUEST_TIMEOUT / 1000} 秒`)) })
     })
 
     return { success: true, html, url }

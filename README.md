@@ -1,208 +1,235 @@
-# 申论素材库 - 微信小程序
+# 申论素材库
 
-基于人民网观点频道（opinion.people.com.cn）的国考申论备考素材学习小程序。
+[![Tests](https://github.com/Czw040526/shenlun-miniapp/actions/workflows/test.yml/badge.svg)](https://github.com/Czw040526/shenlun-miniapp/actions/workflows/test.yml)
 
-## 功能概述
+一个用于个人申论备考的微信小程序，按日期归档并阅读人民网观点频道文章，同时整理《求是》半月刊目录与全文。
 
-- **今日精读**：首页展示当日 AI 生成的“每日一篇”申论/面试精读稿
-  - 今日选文：从前一天人民网观点文章里选择 1 篇最值得继续学的文章
-  - 骨架拆解：把“动词+宾语”的论证短链、可迁移骨架和使用场景放在一块看
-  - 素材工具箱：把对策四要素、规范词、金句和案例放在一块存；金句/案例各保留 1 个
-  - 10分钟微练：每天只完成一项小练习，降低坚持成本
-- **选文逻辑**：优先选择申论迁移价值高的短评或标准政论；地方类文章不会简单丢弃，而是作为“案例素材”处理，重点提取事实、做法和成效
-  - 今日必背金句（一键复制）
-- **文章详情**：结构拆解、金句提取、适用题型、学习要点
-- **历史记录**：按日期浏览历史所有素材，支持展开查看
-- **云端预生成**：微信云函数每日早 7:30 根据前一天人民网观点内容分批生成成品稿
-- **一键复制全文**：小程序首页直接展示可复制成品稿，打开速度只取决于数据库读取
+项目采用“微信小程序 + 腾讯云函数 + 云数据库”架构。首次打开内容时由云函数抓取官网页面并归档，后续直接读取云端存档。项目不生成 AI 讲解，不需要 OpenAI、DeepSeek 等大模型 API Key。
+
+## 效果展示
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/people-article.jpg" alt="人民网文章阅读界面"></td>
+    <td width="50%"><img src="docs/screenshots/people-history.jpg" alt="人民网历史存档界面"></td>
+  </tr>
+  <tr>
+    <td align="center">人民网文章阅读</td>
+    <td align="center">人民网历史存档</td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/qiushi-current.jpg" alt="求是本期目录界面"></td>
+    <td width="50%"><img src="docs/screenshots/qiushi-history.jpg" alt="求是历史存档界面"></td>
+  </tr>
+  <tr>
+    <td align="center">《求是》本期目录</td>
+    <td align="center">《求是》历史存档</td>
+  </tr>
+</table>
+
+## 主要功能
+
+- 人民网观点文章按日读取，支持上一篇、下一篇和刷新文章。
+- 首次读取时由腾讯云函数抓取正文并存档，后续直接读取云数据库。
+- 人民网历史记录按日期组织，可进入任意文章阅读全文。
+- 《求是》按每月 1 日、16 日的半月刊节奏读取最新一期目录。
+- 《求是》历史记录独立存储，并支持补齐当年已经发布的期刊。
+- 四个底部导航入口：人民网、人民网历史、求是、求是历史。
+- 无需本地服务器、桌面定时任务或大模型 API。
+
+## 工作方式
+
+```text
+微信小程序
+  └─ 调用腾讯云函数
+       ├─ 读取 daily_materials / qiushi_issues
+       └─ 首次缺少存档时调用 fetchPage 抓取官网页面
+            ├─ opinion.people.com.cn
+            └─ qstheory.cn
+```
+
+网页抓取和数据库访问都在云函数中完成，小程序前端不保存第三方密钥。
 
 ## 项目结构
 
-```
+```text
 shenlun-miniapp/
-├── miniprogram/           # 小程序前端
-│   ├── app.js
-│   ├── app.json
-│   ├── app.wxss
-│   ├── sitemap.json
-│   ├── pages/
-│   │   ├── index/         # 首页（今日素材）
-│   │   ├── detail/        # 文章详情页
-│   │   └── history/       # 历史记录页
-│   └── images/            # Tab Bar 图标（需自行添加）
-├── cloud/
-│   └── functions/
-│       ├── generateDailyMaterial/   # 核心：7:30 定时分批生成每日一篇精读稿
-│       ├── callDeepSeek/            # DeepSeek API 调用
-│       ├── getDailyMaterial/        # 获取当日素材
-│       ├── getArticleDetail/        # 获取文章详情
-│       ├── getHistory/              # 获取历史记录
-│       ├── publishMaterial/         # 可选：web-admin 发布成品稿
-│       └── fetchPage/              # 网页抓取
-├── web-admin/                       # 可选备用：本地网页后台
-└── project.config.json
+├─ miniprogram/                     # 微信小程序前端
+│  ├─ pages/index/                  # 人民网文章阅读
+│  ├─ pages/history/                # 人民网历史存档
+│  ├─ pages/qiushi/                 # 《求是》本期目录
+│  ├─ pages/qiushi-history/         # 《求是》历史存档
+│  └─ pages/detail/                 # 文章详情页
+├─ cloud/functions/
+│  ├─ fetchPage/                    # 抓取网页
+│  ├─ getDailyMaterial/             # 人民网当日文章
+│  ├─ getHistory/                   # 人民网历史索引
+│  ├─ getArticleDetail/             # 单篇文章与前后篇定位
+│  ├─ getQiushiIssue/               # 《求是》目录、归档与定时同步
+│  └─ getQiushiHistory/             # 《求是》历史索引
+├─ test/                            # 网页解析单元测试
+├─ docs/screenshots/                # GitHub 效果展示图
+├─ cloudbaserc.example.json         # CloudBase CLI 配置模板
+├─ project.config.json              # 微信开发者工具项目配置
+└─ package.json                     # 本地及 GitHub Actions 测试入口
 ```
 
-## 部署步骤
+## 从零配置与部署
 
 ### 1. 注册微信小程序
 
-在 [微信公众平台](https://mp.weixin.qq.com/) 注册小程序，获取 AppID。
+1. 在[微信公众平台](https://mp.weixin.qq.com/)注册小程序。
+2. 在“小程序后台 → 开发管理 → 开发设置”中找到 AppID。
+3. 安装并登录微信开发者工具。
 
-### 2. 开通云开发
+### 2. 下载并导入项目
 
-在微信开发者工具中打开项目，点击「云开发」开通环境。
+```bash
+git clone https://github.com/Czw040526/shenlun-miniapp.git
+```
 
-### 3. 创建数据库集合
+在微信开发者工具中选择“导入项目”，项目目录选择克隆后的 `shenlun-miniapp` 文件夹。
 
-在云开发控制台创建以下集合：
+仓库中的 `project.config.json` 使用 `touristappid` 占位。导入时填写自己的 AppID，或将该文件中的：
 
-| 集合名 | 用途 |
-|--------|------|
-| `daily_materials` | 存储每日生成的完整素材数据 |
-| `history_index` | 历史记录索引（轻量，供列表页快速查询） |
-| `material_generation_jobs` | 云函数分批生成任务进度、错误和中间结果 |
+```json
+"appid": "touristappid"
+```
 
-### 4. 配置 DeepSeek API Key
+替换为自己的 AppID。
 
-1. 在 [DeepSeek 开放平台](https://platform.deepseek.com/) 获取 API Key
-2. 在云开发控制台 → 云函数 → `callDeepSeek` → 配置环境变量：
-   - `DEEPSEEK_API_KEY`: 你的 API Key
+### 3. 开通腾讯云开发
+
+1. 打开项目后，点击微信开发者工具顶部的“云开发”。
+2. 按提示创建一个云开发环境。
+3. 记录环境 ID，例如 `cloud1-xxxx`。
+4. 打开 `miniprogram/app.js`，将：
+
+```js
+env: 'your-cloudbase-env-id'
+```
+
+替换为自己的环境 ID。
+
+如果使用 CloudBase CLI，再复制 `cloudbaserc.example.json` 为 `cloudbaserc.json`，并把其中的 `your-cloudbase-env-id` 替换为相同的环境 ID。真实的 `cloudbaserc.json` 已被 Git 忽略。
+
+### 4. 创建云数据库集合
+
+在“云开发 → 数据库”中依次创建：
+
+| 集合 | 用途 |
+| --- | --- |
+| `daily_materials` | 人民网每日文章正文与元数据 |
+| `qiushi_issues` | 《求是》期刊目录、文章与历史记录 |
+
+小程序前端不会直接读写这些集合，建议将集合权限设置为仅云函数或管理端可读写。
+
+若控制台提示 `daily_materials` 的日期排序缺少索引，请为字段 `date` 创建降序索引。
 
 ### 5. 部署云函数
 
-在微信开发者工具中，右键每个云函数目录，选择「上传并部署：云端安装依赖」。
+按下面顺序部署：
 
-建议至少部署：
+| 顺序 | 云函数 | 超时 | 内存 | 说明 |
+| ---: | --- | ---: | ---: | --- |
+| 1 | `fetchPage` | 60 秒 | 256 MB | 抓取人民网和求是网页 |
+| 2 | `getDailyMaterial` | 60 秒 | 512 MB | 读取或首次归档人民网当日文章 |
+| 3 | `getHistory` | 20 秒 | 256 MB | 读取人民网历史索引 |
+| 4 | `getArticleDetail` | 60 秒 | 256 MB | 读取单篇文章和前后篇位置 |
+| 5 | `getQiushiIssue` | 180 秒 | 512 MB | 读取、补齐并归档《求是》期刊 |
+| 6 | `getQiushiHistory` | 180 秒 | 512 MB | 读取《求是》历史存档 |
 
-| 云函数 | 必须 | 说明 |
-|--------|------|------|
-| `fetchPage` | 是 | 抓取人民网栏目页和文章页 |
-| `callDeepSeek` | 是 | 调用 DeepSeek API |
-| `generateDailyMaterial` | 是 | 7:30 启动，分批处理，最终选出一篇文章生成精读稿 |
-| `getDailyMaterial` | 是 | 小程序首页读取成品稿 |
-| `getHistory` | 是 | 历史页读取记录 |
-| `getArticleDetail` | 是 | 旧版详情页兼容 |
-| `publishMaterial` | 可选 | 只在使用本地 web-admin 时需要 |
+在微信开发者工具的文件树中展开 `cloud/functions`，对上述每个函数目录执行：
 
-建议把 `generateDailyMaterial`、`callDeepSeek`、`fetchPage` 的超时时间设为 60 秒。
+1. 右键函数目录。
+2. 选择“上传并部署：云端安装依赖”。
+3. 等待部署成功后再继续下一个函数。
 
-### 6. 自动生成逻辑
+函数名必须与目录名完全一致。所有函数均使用 Node.js 20 运行时；相关超时和内存值已经写入各自的 `config.json` 及 `cloudbaserc.example.json`。
 
-`generateDailyMaterial/config.json` 已配置 3 个定时触发器：
+### 6. 上传《求是》定时触发器
 
-- `dailyStart`：每天 7:30 启动前一天素材任务
-- `materialWorkerEarly`：7:32-7:58 每 2 分钟续跑
-- `materialWorker`：8:00-11:58 每 2 分钟续跑
+`getQiushiIssue/config.json` 配置了每月 1 日和 16 日北京时间 12:00 的同步任务。
 
-函数每次只处理少量文章。逐篇分析完成后，会从候选文章中选择 1 篇最值得精读的文章，并按 `selection → framework → toolbox → practice` 逐模块生成并校验，全部通过后才最终合并保存。因此小程序打开时不会等待 DeepSeek，也不会出现多篇文章内容串篇。
+部署 `getQiushiIssue` 后，再右键该函数并执行“上传触发器”。如果暂时不需要自动同步，也可以不上传触发器；首次打开《求是》页面时仍会按需读取。
 
-选文时会同时判断文章用法：
+### 7. 首次运行与验证
 
-- `短评表达训练`：通常来自“今日谈”，适合训练从生活小切口提炼大主题
-- `结构范本`：通常来自“人民时评”“人民锐评”或“评论员观察”，适合模仿大作文分论点论证
-- `案例素材`：地方发展类文章优先提取案例，不强行精读全文结构
-- `主题精读`：归入对应知识树，作为当天的母题材料
+1. 点击微信开发者工具的“编译”。
+2. 打开“人民网”，确认能显示当天文章；首次加载会比缓存读取更慢。
+3. 打开“人民网历史”，确认当天记录已经归档。
+4. 打开“求是”，确认能显示官网已经发布的最新一期。
+5. 首次打开“求是历史”，等待云函数补齐当年期刊。
 
-### 7. 手动测试云端生成
+也可以在云函数测试面板中手动验证：
 
-在微信开发者工具云函数测试里，可以调用 `generateDailyMaterial`：
-
-```json
-{ "action": "start", "date": "2026-07-16", "force": true }
-```
-
-查看进度：
+`getDailyMaterial`：
 
 ```json
-{ "action": "status", "date": "2026-07-16" }
+{
+  "date": "2026-08-20",
+  "force": true
+}
 ```
 
-继续处理下一篇：
+`getQiushiIssue` 年度回填：
 
 ```json
-{ "action": "work", "batchSize": 1 }
+{
+  "action": "backfill",
+  "year": 2026,
+  "date": "2026-08-20"
+}
 ```
 
-单篇分析完成后继续执行同一个 `work`，会依次生成并校验五个精读模块。模块都通过后，再执行最终汇总：
+部署到其他年份时，把示例日期和年份替换为实际值。
 
-```json
-{ "action": "finalize", "date": "2026-07-16" }
+## 常见问题
+
+### 提示“云开发环境不存在”
+
+检查 `miniprogram/app.js` 中的环境 ID 是否与微信开发者工具当前选择的云环境一致。
+
+### 提示“云函数不存在”
+
+确认六个函数已经上传成功，且云端函数名与目录名完全一致。
+
+### 人民网页面没有文章
+
+先在云函数测试面板运行 `fetchPage` 或 `getDailyMaterial`，检查云函数是否能访问外网，以及目标日期是否已有文章发布。必要时把 `fetchPage` 和 `getDailyMaterial` 超时保持为 60 秒。
+
+### 《求是》历史回填超时
+
+确认 `getQiushiIssue` 和 `getQiushiHistory` 的超时均为 180 秒、内存为 512 MB。首次年度回填数据较多，完成时间会明显长于普通读取。
+
+### 新一期日期到了但目录还是上一期
+
+这是预期降级行为：当官网新一期目录尚未上线时，小程序继续显示最近一个已发布期刊，不提前显示空目录。
+
+### 数据库提示无权限或缺少索引
+
+确认两个集合名称拼写正确，并允许云函数管理端访问；按照控制台提示补充 `date` 等查询索引。
+
+## 本地测试
+
+安装 Node.js 20 后，在项目根目录运行：
+
+```bash
+npm test
 ```
 
-### 8. 可选：启动本地 web-admin
+测试覆盖人民网文章解析和《求是》期刊解析，不需要安装依赖或填写 API Key。相同测试也会由 GitHub Actions 自动执行。
 
-现在主流程不需要网页后台。若你想在电脑上预览、手动编辑或通过 HTTP 发布，可以再使用：
+## 公开仓库安全说明
 
-```powershell
-cd D:\AI\每日申论\shenlun-miniapp\web-admin
-copy .env.example .env
-notepad .env
-node server.js
-```
+以下本地配置已被 Git 忽略：
 
-打开 `http://127.0.0.1:8787`。
+- `cloudbaserc.json` 中的真实腾讯云环境 ID
+- `project.private.config.json` 中的开发者工具个人设置
+- `.env`、`node_modules`、日志和构建产物
 
-### 9. 上传前端代码
+`project.config.json` 和 `miniprogram/app.js` 均使用占位值。Fork 或克隆后请替换为自己的 AppID 和云环境 ID，不要把 API Key、访问令牌或其他密钥写入源码。
 
-点击微信开发者工具工具栏的「上传」按钮，提交审核。
+## 内容与版权
 
-## DeepSeek API 接入说明
-
-### 两个云函数分工
-
-| 云函数 | 职责 |
-|--------|------|
-| `callDeepSeek` | 纯 API 调用封装，处理鉴权、超时、重试 |
-| `generateDailyMaterial` | 业务逻辑：抓取文章列表 → 构造 prompt → 调用 callDeepSeek → 解析结果 → 存入数据库 |
-
-### 数据流
-
-```
-generateDailyMaterial 每天 7:30
-  → 计算前一天日期
-  → 抓取 opinion.people.com.cn 栏目文章
-  → 写入 material_generation_jobs
-  → 每 2 分钟处理 1 篇文章
-  → 单篇 DeepSeek 分析
-  → 从候选文章中选择 1 篇最值得精读的文章
-  → 逐模块生成 selection / framework / toolbox / practice
-  → 每个模块分别校验日期、标题、链接、规范词和字段完整性
-  → 精读模块通过后最终合并
-  → 保存前进行整稿质量校验
-  → 拼接固定 copyText 模板
-  → 存入 daily_materials / history_index
-
-用户打开小程序
-  → getDailyMaterial 只查询数据库
-  → 有数据？直接展示 copyText
-  → 无数据？提示 7:30 后更新
-```
-
-### 降级策略
-
-当个别文章的 DeepSeek 分析失败时，任务会记录错误并继续处理其余文章。若最终没有合格文章，或检测到标题、链接、日期、规范词、文章内容不匹配，任务会标记为 `failed` 并阻止错误数据覆盖数据库中的已有成稿。
-
-### DeepSeek API 费用参考
-
-- 模型：`deepseek-chat`
-- 实际价格以 DeepSeek 开放平台控制台为准
-- 分批模式会多次调用 API：若希望省额度，可把 `MAX_ARTICLES` 或 `LIMIT_PER_COLUMN` 调小
-
-## Tab Bar 图标
-
-需要在 `miniprogram/images/` 下放置 4 个 81×81 像素的 PNG 图标：
-
-- `today.png` — 今日（未选中，灰色）
-- `today-active.png` — 今日（选中，红色 #c41e3a）
-- `history.png` — 历史（未选中，灰色）
-- `history-active.png` — 历史（选中，红色 #c41e3a）
-
-可使用 iconfont 或自行设计后放入该目录。
-
-## 注意事项
-
-1. **内容版权**：所有素材原文版权归人民网所有，本工具仅做学习摘编
-2. **网页抓取**：人民网可能有反爬策略，`fetchPage` 已做基本处理（编码检测、重定向）
-3. **云函数超时**：`generateDailyMaterial` 和 `callDeepSeek` 建议保持 60 秒
-4. **API 限流**：DeepSeek 免费额度有限，建议设置每日生成次数上限
+本项目用于个人学习、技术研究和内容归档。文章版权归人民网、《求是》杂志社、原作者及其他相关权利人所有。请遵守目标网站规则、微信平台规范和适用法律，不要将抓取内容用于未经授权的转载或商业分发。

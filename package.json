@@ -1,0 +1,9 @@
+{
+  "name": "shenlun-miniapp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "人民网观点与《求是》文章归档阅读微信小程序",
+  "scripts": {
+    "test": "node test/article-reader.test.js && node test/qiushi-reader.test.js"
+  }
+}

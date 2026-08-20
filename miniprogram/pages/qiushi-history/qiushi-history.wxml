@@ -1,36 +1,37 @@
 <view class="page">
   <view class="history-head">
-    <view class="head-title">历史存档</view>
-    <view class="head-subtitle">按日期保存，点击文章即可阅读全文</view>
+    <view class="head-title">《求是》历史存档</view>
+    <view class="head-subtitle">独立保存已读取期刊 · 半月刊，每月1日、16日出版</view>
   </view>
 
   <view class="loading-wrap" wx:if="{{loading}}">
     <view class="icon">⏳</view>
-    <view class="text">正在读取历史存档…</view>
+    <view class="text">正在同步今年已发布期刊并读取历史存档…</view>
   </view>
 
   <view class="records" wx:if="{{!loading && records.length}}">
-    <view class="record" wx:for="{{records}}" wx:key="date" wx:for-item="record">
+    <view class="record" wx:for="{{records}}" wx:key="issueKey" wx:for-item="record">
       <view class="record-date">
         <view class="date-day">{{record.day}}</view>
         <view class="date-month">{{record.month}}月</view>
       </view>
       <view class="record-main">
-        <view class="record-title">{{record.date}} 人民网观点</view>
-        <view class="record-count">共 {{record.articleCount}} 篇</view>
+        <view class="record-title">{{record.title}}</view>
+        <view class="record-count">{{record.publishDate}} · 共 {{record.articleCount}} 篇</view>
         <view class="article-list">
           <view class="article-row"
                 wx:for="{{record.articles}}"
                 wx:key="id"
                 wx:for-item="article"
-                data-date="{{record.date}}"
+                data-issue-key="{{record.issueKey}}"
+                data-date="{{record.publishDate}}"
                 data-index="{{article.index}}"
                 data-id="{{article.id}}"
                 bindtap="onOpenArticle">
             <view class="article-index">{{article.index + 1}}</view>
             <view class="article-info">
               <view class="article-title">{{article.title}}</view>
-              <view class="article-column">{{article.column || '人民网观点'}}</view>
+              <view class="article-author">{{article.author || '《求是》'}}</view>
             </view>
             <view class="article-arrow">›</view>
           </view>
@@ -41,7 +42,7 @@
 
   <view class="empty-wrap" wx:if="{{!loading && !records.length}}">
     <view class="icon">📚</view>
-    <view class="text">暂无历史存档</view>
-    <view class="empty-message">{{error || '打开今日文章后会自动归档在这里。'}}</view>
+    <view class="text">暂无《求是》历史存档</view>
+    <view class="empty-message">{{error || '打开《求是》板块后，最新一期会自动归档在这里。'}}</view>
   </view>
 </view>

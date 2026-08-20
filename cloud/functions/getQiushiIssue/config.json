@@ -1,0 +1,11 @@
+{
+  "timeout": 180,
+  "memorySize": 512,
+  "triggers": [
+    {
+      "name": "qiushiSemiMonthlySync",
+      "type": "timer",
+      "config": "0 0 4 1,16 * * *"
+    }
+  ]
+}

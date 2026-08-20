@@ -1,0 +1,62 @@
+{
+  "$schema": "https://static.cloudbase.net/cli/cloudbaserc.schema.json",
+  "envId": "your-cloudbase-env-id",
+  "functionRoot": "cloud/functions",
+  "functions": [
+    {
+      "name": "getDailyMaterial",
+      "runtime": "Nodejs20.19",
+      "handler": "index.main",
+      "timeout": 60,
+      "memorySize": 512,
+      "description": "按日期抓取、归档并读取人民网观点全文"
+    },
+    {
+      "name": "getHistory",
+      "runtime": "Nodejs20.19",
+      "handler": "index.main",
+      "timeout": 20,
+      "memorySize": 256,
+      "description": "读取按日期归档的文章列表"
+    },
+    {
+      "name": "getArticleDetail",
+      "runtime": "Nodejs20.19",
+      "handler": "index.main",
+      "timeout": 60,
+      "memorySize": 256,
+      "description": "读取一篇归档文章及前后篇位置"
+    },
+    {
+      "name": "fetchPage",
+      "runtime": "Nodejs20.19",
+      "handler": "index.main",
+      "timeout": 60,
+      "memorySize": 256,
+      "description": "抓取人民网和求是网页内容"
+    },
+    {
+      "name": "getQiushiIssue",
+      "runtime": "Nodejs20.19",
+      "handler": "index.main",
+      "timeout": 180,
+      "memorySize": 512,
+      "description": "发现、归档并读取《求是》期刊目录",
+      "triggers": [
+        {
+          "name": "qiushiSemiMonthlySync",
+          "type": "timer",
+          "config": "0 0 4 1,16 * * *"
+        }
+      ]
+    },
+    {
+      "name": "getQiushiHistory",
+      "runtime": "Nodejs20.19",
+      "handler": "index.main",
+      "timeout": 180,
+      "memorySize": 512,
+      "description": "读取《求是》独立历史存档"
+    }
+  ]
+}

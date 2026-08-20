@@ -1,0 +1,52 @@
+<view class="page">
+  <view class="masthead">
+    <view class="masthead-top">
+      <view>
+        <view class="magazine-name">求 是</view>
+        <view class="magazine-en">QIUSHI JOURNAL</view>
+      </view>
+      <view class="refresh-btn" bindtap="onRefresh">更新目录</view>
+    </view>
+    <view class="schedule">半月刊 · 每月1日、16日出版</view>
+  </view>
+
+  <view class="loading-wrap" wx:if="{{loading}}">
+    <view class="icon">⏳</view>
+    <view class="text">正在读取《求是》最新一期…</view>
+  </view>
+
+  <block wx:if="{{!loading && archive}}">
+    <view class="pending" wx:if="{{pendingText}}">{{pendingText}}</view>
+    <view class="issue-card">
+      <view class="issue-label">{{archive.periodical}}</view>
+      <view class="issue-title">{{archive.title}}</view>
+      <view class="issue-meta">{{archive.publishDate}} · 共 {{archive.articleCount}} 篇</view>
+      <view class="issue-source">来源：{{archive.source}} · 点击文章阅读全文</view>
+    </view>
+
+    <view class="catalog-title">本期目录</view>
+    <view class="article-list">
+      <view class="article-row"
+            wx:for="{{articles}}"
+            wx:key="id"
+            data-index="{{item.index}}"
+            bindtap="onOpenArticle">
+        <view class="article-index">{{item.index + 1}}</view>
+        <view class="article-info">
+          <view class="article-title">{{item.title}}</view>
+          <view class="article-author" wx:if="{{item.author}}">{{item.author}}</view>
+        </view>
+        <view class="article-arrow">›</view>
+      </view>
+    </view>
+
+    <view class="copyright-note">文章版权归原作者及《求是》杂志社所有，本小程序仅作个人阅读与归档。</view>
+  </block>
+
+  <view class="empty-wrap" wx:if="{{!loading && !archive}}">
+    <view class="icon">📕</view>
+    <view class="text">暂未读取到《求是》目录</view>
+    <view class="empty-message">{{error}}</view>
+    <view class="empty-refresh" bindtap="onRefresh">重新读取</view>
+  </view>
+</view>

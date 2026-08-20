@@ -1,61 +1,49 @@
-// 云函数：获取历史记录
+// 云函数：读取按日期归档的文章列表
 const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
-
 const db = cloud.database()
 
-exports.main = async (event) => {
-  const limit = event.limit || 30
-
+exports.main = async (event = {}) => {
+  const limit = Math.min(Math.max(Number(event.limit || 60), 1), 100)
   try {
-    // 查询历史索引
-    const res = await db.collection('history_index')
+    const result = await db.collection('daily_materials')
       .orderBy('date', 'desc')
       .limit(limit)
       .get()
 
-    if (res.data.length > 0) {
-      // 如果有展开需求，可以附上完整的 material 数据
-      // 默认只返回索引信息（轻量）
-      const records = await Promise.all(
-        res.data.map(async (entry) => {
-          const detail = await db.collection('daily_materials')
-            .where({ date: entry.date })
-            .get()
-
-          if (detail.data.length > 0) {
-            const m = detail.data[0].material
-            return {
-              date: entry.date,
-              title: entry.title,
-              mode: entry.mode || m.mode || '',
-              articleTitle: entry.articleTitle || (m.dailyArticle && m.dailyArticle.title) || '',
-              articleUrl: entry.articleUrl || (m.dailyArticle && m.dailyArticle.url) || '',
-              articleColumn: entry.articleColumn || (m.dailyArticle && m.dailyArticle.column) || '',
-              articleCount: entry.articleCount || (m.dailyArticle ? 1 : 0),
-              dailyArticle: m.dailyArticle,
-              selectedArticle: m.selectedArticle,
-              selection: m.selection,
-              framework: m.framework,
-              toolbox: m.toolbox,
-              argument: m.argument,
-              method: m.method,
-              expression: m.expression,
-              practice: m.practice,
-              highlightQuotes: m.highlightQuotes,
-              copyText: m.copyText || ''
-            }
-          }
-          return entry
-        })
-      )
-
-      return { success: true, records }
-    }
-
-    return { success: true, records: [] }
+    const records = result.data.map(record => normalizeRecord(record)).filter(record => record.articles.length)
+    return { success: true, records }
   } catch (err) {
     console.error('getHistory error:', err)
     return { success: false, error: err.message, records: [] }
+  }
+}
+
+function normalizeRecord(record) {
+  const material = record.material || {}
+  const source = Array.isArray(material.articles) ? material.articles : (record.articles || [])
+  const first = material.dailyArticle || material.selectedArticle
+  const values = first ? [first, ...source] : source
+  const seen = new Set()
+  const articles = values.filter(article => {
+    const key = String(article && article.url || '')
+    if (!key || article.error || seen.has(key)) return false
+    seen.add(key)
+    return true
+  }).map((article, index) => ({
+    id: article.id || encodeURIComponent(article.url),
+    index,
+    title: article.title || '未命名文章',
+    column: article.column || '人民网观点',
+    url: article.url,
+    publishDate: article.publishDate || article.originalDate || record.date,
+    wordCount: Number(article.wordCount || 0)
+  }))
+
+  return {
+    date: record.date,
+    title: `${record.date} 人民网观点`,
+    articleCount: articles.length,
+    articles
   }
 }

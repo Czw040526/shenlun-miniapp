@@ -1,71 +1,73 @@
-// 详情页逻辑
 Page({
   data: {
     loading: true,
-    article: null
+    date: '',
+    source: 'people',
+    issueKey: '',
+    issueTitle: '',
+    article: null,
+    currentIndex: 0,
+    total: 0,
+    hasPrevious: false,
+    hasNext: false,
+    error: ''
   },
 
   onLoad(options) {
-    const { id, title } = options
-    if (title) {
-      wx.setNavigationBarTitle({ title: decodeURIComponent(title).substring(0, 12) + '…' })
-    }
-    this.fetchDetail(id)
+    this.data.date = options.date || ''
+    this.data.source = options.source === 'qiushi' ? 'qiushi' : 'people'
+    this.data.issueKey = options.issueKey || ''
+    this.fetchArticle(Number(options.index || 0), options.id || '')
   },
 
-  // 获取文章详情
-  fetchDetail(id) {
-    this.setData({ loading: true })
-
+  fetchArticle(index, id) {
+    this.setData({ loading: true, error: '' })
     wx.cloud.callFunction({
       name: 'getArticleDetail',
-      data: { id }
+      data: {
+        source: this.data.source,
+        issueKey: this.data.issueKey,
+        date: this.data.date,
+        index,
+        id
+      }
     }).then(res => {
-      if (res.result && res.result.article) {
-        this.setData({ article: this.normalizeArticle(res.result.article), loading: false })
-      } else {
-        this.setData({ article: null, loading: false })
+      const result = res.result || {}
+      if (!result.success || !result.article) {
+        this.setData({ loading: false, article: null, error: result.error || '文章读取失败。' })
+        return
       }
-    }).catch(() => {
-      // 降级从缓存读取
-      const allArticles = wx.getStorageSync('todayArticles') || []
-      const article = allArticles.find(a => a.id === id)
-      this.setData({ article: this.normalizeArticle(article) || null, loading: false })
-    })
-  },
-
-  normalizeArticle(article) {
-    if (!article) return article
-    return {
-      ...article,
-      quotes: (article.quotes || []).map(item => {
-        if (typeof item === 'string') return item
-        return item && (item.text || item.quote || item.content || item.scene || item.usage) || ''
-      }).filter(Boolean)
-    }
-  },
-
-  // 复制金句
-  onCopy(e) {
-    const text = e.currentTarget.dataset.text
-    wx.setClipboardData({
-      data: text,
-      success: () => {
-        wx.showToast({ title: '已复制', icon: 'success', duration: 1200 })
-      }
-    })
-  },
-
-  // 打开原文链接
-  onOpenUrl() {
-    const url = this.data.article.url
-    if (url) {
-      wx.setClipboardData({
-        data: url,
-        success: () => {
-          wx.showToast({ title: '链接已复制，请在浏览器中打开', icon: 'none', duration: 2000 })
-        }
+      this.setData({
+        loading: false,
+        date: result.date,
+        source: result.source || this.data.source,
+        issueKey: result.issueKey || this.data.issueKey,
+        issueTitle: result.issueTitle || '',
+        article: result.article,
+        currentIndex: result.index,
+        total: result.total,
+        hasPrevious: result.hasPrevious,
+        hasNext: result.hasNext,
+        error: ''
       })
-    }
+      wx.setNavigationBarTitle({ title: result.issueTitle || `${result.date} 文章` })
+      wx.pageScrollTo({ scrollTop: 0, duration: 0 })
+    }).catch(err => {
+      this.setData({ loading: false, article: null, error: err.errMsg || '文章读取失败。' })
+    })
+  },
+
+  onPrevious() {
+    if (this.data.hasPrevious) this.fetchArticle(this.data.currentIndex - 1, '')
+  },
+
+  onNext() {
+    if (this.data.hasNext) this.fetchArticle(this.data.currentIndex + 1, '')
+  },
+
+  onCopyUrl() {
+    const url = this.data.article && this.data.article.url
+    if (!url) return
+    wx.setClipboardData({ data: url, success: () => wx.showToast({ title: '链接已复制', icon: 'success' }) })
   }
 })

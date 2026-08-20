@@ -1,81 +1,28 @@
-<!-- 详情页 -->
 <view class="page">
-  <!-- 加载中 -->
   <view class="loading-wrap" wx:if="{{loading}}">
     <view class="icon">⏳</view>
-    <view class="text">加载中…</view>
+    <view class="text">正在读取历史文章…</view>
   </view>
 
-  <!-- 内容 -->
-  <view class="container" wx:if="{{!loading && article}}">
-    <!-- 文章信息 -->
-    <view class="article-header card">
-      <view class="tag-row">
-        <text class="tag tag-red" wx:if="{{article.tier === 1}}">{{article.column}}</text>
-        <text class="tag tag-blue" wx:if="{{article.tier === 2}}">{{article.column}}</text>
-        <text class="tag tag-green" wx:if="{{article.tier === 3}}">{{article.column}}</text>
-        <text class="tag tag-blue" wx:if="{{article.category}}">{{article.category}}</text>
-      </view>
-      <view class="title">{{article.title}}</view>
-      <view class="meta">
-        <text>来源：人民网观点频道</text>
-        <text class="sep">|</text>
-        <text>{{article.date}}</text>
-      </view>
+  <view class="article" wx:if="{{!loading && article}}">
+    <view class="position">{{issueTitle || date}} · 第 {{currentIndex + 1}} / {{total}} 篇</view>
+    <view class="column">{{article.column || (source === 'qiushi' ? '《求是》' : '人民网观点')}}</view>
+    <view class="title">{{article.title}}</view>
+    <view class="meta">{{article.publishDate || date}}<text wx:if="{{article.source}}"> · {{article.source}}</text><text wx:if="{{article.author}}"> · {{article.author}}</text></view>
+    <view class="body">
+      <text class="paragraph" user-select="true" wx:for="{{article.paragraphs}}" wx:key="*this">{{item}}</text>
+      <text class="content" user-select="true" wx:if="{{(!article.paragraphs || !article.paragraphs.length) && article.content}}">{{article.content}}</text>
     </view>
-
-    <!-- 摘要 -->
-    <view class="card" wx:if="{{article.excerpt}}">
-      <view class="section-title">内容摘要</view>
-      <view class="excerpt-text">{{article.excerpt}}</view>
-    </view>
-
-    <!-- 结构拆解 -->
-    <view class="card" wx:if="{{article.structure}}">
-      <view class="section-title">结构拆解</view>
-      <view class="structure-text">{{article.structure}}</view>
-    </view>
-
-    <!-- 金句提取 -->
-    <view class="card" wx:if="{{article.quotes && article.quotes.length}}">
-      <view class="section-title">金句提取</view>
-      <block wx:for="{{article.quotes}}" wx:key="*this">
-        <view class="quote-row">
-          <view class="quote-content">{{item}}</view>
-          <view class="copy-btn" data-text="{{item}}" bindtap="onCopy">复制</view>
-        </view>
-      </block>
-    </view>
-
-    <!-- 适用题型 -->
-    <view class="card" wx:if="{{article.applicableQuestions && article.applicableQuestions.length}}">
-      <view class="section-title">适用题型</view>
-      <view class="tag-row">
-        <text class="tag tag-green" wx:for="{{article.applicableQuestions}}" wx:key="*this">{{item}}</text>
-      </view>
-    </view>
-
-    <!-- 学习要点 -->
-    <view class="card" wx:if="{{article.learningPoints && article.learningPoints.length}}">
-      <view class="section-title">学习要点</view>
-      <block wx:for="{{article.learningPoints}}" wx:key="*this">
-        <view class="point-row">{{index+1}}. {{item}}</view>
-      </block>
-    </view>
-
-    <!-- 原文链接 -->
-    <view class="card" wx:if="{{article.url}}">
-      <view class="section-title">阅读原文</view>
-      <view class="link-row" bindtap="onOpenUrl">
-        <text class="link-text">{{article.url}}</text>
-        <text class="arrow">↗</text>
-      </view>
+    <view class="source" bindtap="onCopyUrl">原文链接：{{article.url}}</view>
+    <view class="nav-row">
+      <view class="nav-btn {{!hasPrevious ? 'disabled' : ''}}" bindtap="onPrevious">上一篇</view>
+      <view class="nav-btn primary {{!hasNext ? 'disabled' : ''}}" bindtap="onNext">下一篇</view>
     </view>
   </view>
 
-  <!-- 空态 -->
   <view class="empty-wrap" wx:if="{{!loading && !article}}">
     <view class="icon">📄</view>
-    <view class="text">文章不存在或已删除</view>
+    <view class="text">文章读取失败</view>
+    <view class="error">{{error}}</view>
   </view>
 </view>

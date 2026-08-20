@@ -1,13 +1,13 @@
 App({
   globalData: {
-    baseUrl: 'https://your-api-domain.com',
     userInfo: null,
     currentDate: ''
   },
   onLaunch() {
     // 初始化云开发
     wx.cloud.init({
-      env: 'cloud1-d0g7x4oyh222f603a',
+      // 部署前替换为自己的腾讯云开发环境 ID
+      env: 'your-cloudbase-env-id',
       traceUser: true
     })
 

@@ -1,0 +1,9 @@
+{
+  "name": "getQiushiIssue",
+  "version": "1.0.0",
+  "description": "获取并归档《求是》杂志期刊目录",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

@@ -15,8 +15,19 @@ dist/
 build/
 coverage/
 
+# Legacy local tools kept outside the public project
+web-admin/
+render.yaml
+cloud/functions/callDeepSeek/
+cloud/functions/generateDailyMaterial/
+cloud/functions/publishMaterial/
+miniprogram/utils/materialFormatter.js
+
 # WeChat developer local settings
 project.private.config.json
+cloudbaserc.json
+.cloudbase/
+.tcb/
 
 # Local agent/tool state
 .agents/
